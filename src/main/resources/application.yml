@@ -1,0 +1,12 @@
+server:
+  port: 1000
+
+spring:
+  datasource:
+    password: postgres
+    username: postgres
+    url: jdbc:postgresql://localhost:5432/tg_service
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
