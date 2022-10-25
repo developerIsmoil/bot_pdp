@@ -17,12 +17,12 @@ public class UserDTO implements Serializable {
     private UUID id;
     private String firstName;
     private String lastName;
-    private String phoneNumber;
-    private String photoId;
     private String patron;
+    private String phoneNumber;
     private List<String> permissions;
     private boolean enabled;
     private Timestamp createdAt;
+    private String photoId;
     private Date birthDate;
     private boolean isAdmin;
 

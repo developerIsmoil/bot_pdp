@@ -16,6 +16,9 @@ public class WebhookController {
 
     @PostMapping
     public void getUpdate(@RequestBody Update update) {
+        if (update.getPreCheckoutQuery() != null) {
+            telegramBotServiceImpl.requestManagerClick(update);
+        }
         telegramBotServiceImpl.requestManager(update);
     }
 }

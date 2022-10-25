@@ -11,6 +11,6 @@ import lombok.NoArgsConstructor;
 public class SendPhoto {
     @JsonProperty("chat_id")
     private String chatId;
-    private String caption;
     private String photo;
+    private String caption;
 }

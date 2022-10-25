@@ -3,9 +3,9 @@ package com.example.appwebhooktelegram.service;
 import com.example.appwebhooktelegram.entity.User;
 import com.example.appwebhooktelegram.feign.TelegramFeign;
 import com.example.appwebhooktelegram.feign.UniversityFeign;
-import com.example.appwebhooktelegram.payload.ResultMessage;
-import com.example.appwebhooktelegram.payload.SendPhoto;
+import com.example.appwebhooktelegram.payload.*;
 import com.example.appwebhooktelegram.repository.UserRepository;
+import com.example.appwebhooktelegram.results.ApiResult;
 import com.example.appwebhooktelegram.utils.BotState;
 import com.example.appwebhooktelegram.utils.Buttons;
 import com.example.appwebhooktelegram.utils.RestConstants;
@@ -29,6 +29,7 @@ public class BotStatusServiceImpl implements BotStatusService {
     public final TelegramButtonService telegramButtonService;
     public final TelegramFeign telegramFeign;
     public final UniversityFeign universityFeign;
+    public final BotStateContextImpl botStateContext;
 
     public void statusManagerService(User user, SendMessage sendMessage, Update update) {
         switch (user.getState()) {
@@ -82,10 +83,6 @@ public class BotStatusServiceImpl implements BotStatusService {
                     user.setState(BotState.CABINET);
                 }
             }
-            case BotState.VIEW_HISTORY -> {
-
-                // natijani koradi
-            }
             default -> {
                 System.out.println(update);
                 System.out.println("Bu case uchun hali yozilmagan");
@@ -109,22 +106,25 @@ public class BotStatusServiceImpl implements BotStatusService {
             case Buttons.PERSONAL_ID -> {
                 try {
                     String s = RestConstants.UNIVERSITY_BASE_PATH + RestConstants.BAR_CODE_ATTACHMENT_PATH + user.getPhoneNumber();
-                    SendPhoto sendPhoto = new SendPhoto(user.getChatId(), "Personal ID", s);
-                    telegramFeign.sendPhoto(RestConstants.BOT_TOKEN, sendPhoto);
+                    SendPhoto photo = new SendPhoto(user.getChatId(), s, "Personal ID");
+                    telegramFeign.sendPhoto(RestConstants.BOT_TOKEN, photo);
                     user.setState(BotState.CABINET);
                 } catch (Exception e) {
                     sendMessage.setText("register exam tugmasini bosing");
                 }
             }
             case Buttons.REGISTER_EXAM -> {
-//                ApiResult<HashMap<String, List<ExamDTO>>> apiResult = universityFeign.getExams();
-//                HashMap<String, List<ExamDTO>> hashMap = apiResult.getData();
-//                List<ExamDTO> examDTOList = hashMap.get("Math");
-//                List<String> dtoName = new ArrayList<>();
-//                for (ExamDTO dto : examDTOList) {
-//                    dtoName.add(dto.getName());
-//                }
-                List<String> dtoName = new ArrayList<>(Arrays.asList("abs", "dfg"));
+                ApiResult<HashMap<String, List<ExamDTO>>> apiResult = universityFeign.getExams();
+                HashMap<String, List<ExamDTO>> hashMap = apiResult.getData();
+                List<ExamDTO> examDTOList = hashMap.get("Math");
+                List<String> dtoName = new ArrayList<>();
+                if (examDTOList.size() == 0) {
+                    dtoName.add("abs");
+                    dtoName.add("dfg");
+                }
+                for (ExamDTO dto : examDTOList) {
+                    dtoName.add(dto.getName());
+                }
                 Map<String, List<String>> stateButtonMap = new HashMap<>() {
                     {
                         put(Buttons.EXAMS, dtoName);
@@ -136,15 +136,10 @@ public class BotStatusServiceImpl implements BotStatusService {
             }
             case Buttons.EXAM_HISTORY -> {
                 try {
-                    if (user.getPhoneNumber().startsWith("+")){
-                        user.setPhoneNumber(user.getPhoneNumber().substring(1));
-                        userRepository.save(user);
-                    }
-                    sendMessage.setText(universityFeign.searchById(
-                            universityFeign.searchByPhoneNumber(user.getPhoneNumber()).getId()).getResults());
-                    user.setState(BotState.CABINET);
+                    String s = makeExamResult(user);
+                    sendMessage.setText(s);
                 } catch (Exception e) {
-                    sendMessage.setText("Registem exam yoliga oting");
+                    sendMessage.setText("Register  exam yo'liga o'ting");
                 }
             }
             default -> {
@@ -159,7 +154,6 @@ public class BotStatusServiceImpl implements BotStatusService {
         SendInvoice sendInvoice = new SendInvoice();
         List<LabeledPrice> prices = new ArrayList<>();
         prices.add(new LabeledPrice("Order price", 10000000));
-        prices.add(new LabeledPrice("Delivery price", 0));
         sendInvoice.setChatId(user.getChatId());
         sendInvoice.setProviderToken("398062629:TEST:999999999_F91D8F69C042267444B74CC0B3C747757EB0E065");
         sendInvoice.setPrices(prices);
@@ -169,8 +163,16 @@ public class BotStatusServiceImpl implements BotStatusService {
         sendInvoice.setDescription("Click orqali tolov");
 
 
-        ResultMessage resultMessage = new ResultMessage();
-        telegramFeign.sendInvoice(RestConstants.BOT_TOKEN, sendInvoice);
+        ResultMessage resultMessage = telegramFeign.sendInvoice(RestConstants.BOT_TOKEN, sendInvoice);
+        user.setMessageId(String.valueOf(resultMessage.getResult().getMessageId()));
+        userRepository.save(user);
         user.setState(BotState.CABINET);
+    }
+
+    public String makeExamResult(User user) {
+        ApiResult<UserDTO> apiResult = universityFeign.searchByPhoneNumber(user.getPhoneNumber().substring(1));
+        UserDTO userDTO = apiResult.getData();
+        SendUser sendUser = universityFeign.searchById(userDTO.getId());
+        return sendUser.getResults();
     }
 }

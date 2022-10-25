@@ -2,13 +2,11 @@ package com.example.appwebhooktelegram.feign;
 
 import com.example.appwebhooktelegram.payload.*;
 import com.example.appwebhooktelegram.results.ApiResult;
+import com.example.appwebhooktelegram.results.ApiResultDTO;
 import com.example.appwebhooktelegram.utils.RestConstants;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.HttpEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.List;
@@ -32,8 +30,8 @@ public interface UniversityFeign {
     @PostMapping(RestConstants.CHECK_PASSWORD_URL)
     HttpEntity<RegisterResultDTO> checkSmsCode(@RequestBody CheckSmsDTO checkSmsDTO);
 
-    @GetMapping(RestConstants.SEARCH_BY_PHONE_NUMBER_PATH + "/{phoneNumber}")
-    UserDTO searchByPhoneNumber(@PathVariable String phoneNumber);
+    @GetMapping(RestConstants.SEARCH_BY_PHONE_NUMBER_PATH)
+    ApiResult<UserDTO> searchByPhoneNumber(@RequestParam String phoneNumber);
 
     @GetMapping(RestConstants.GET_INFO_USER + "/{id}")
     SendUser searchById(@PathVariable UUID id);

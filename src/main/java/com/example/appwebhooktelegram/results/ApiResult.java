@@ -8,6 +8,7 @@ import lombok.ToString;
 
 import javax.servlet.jsp.ErrorData;
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -51,6 +52,7 @@ public class ApiResult<T> implements Serializable {
     //ERROR RESPONSE WITH MESSAGE AND ERROR CODE
     public ApiResult(String errorMsg, Integer errorCode) {
         this.success = false;
+        this.errors = Collections.singletonList(new ErrorData(new Throwable(),errorCode,errorMsg,errorMsg));
 //        this.errors = Collections.singletonList(new ErrorData(errorMsg, errorCode));
     }
 
@@ -103,4 +105,6 @@ public class ApiResult<T> implements Serializable {
     public static ApiResult<ErrorData> errorResponse(List<ErrorData> errors) {
         return new ApiResult<>(errors);
     }
+
+
 }

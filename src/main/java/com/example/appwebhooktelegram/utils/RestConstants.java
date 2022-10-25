@@ -4,7 +4,7 @@ public interface RestConstants {
     String TELEGRAM_BASE_URL_WITHOUT_BOT = "https://api.telegram.org/";
     String TELEGRAM_BASE_URL = "https://api.telegram.org/bot";
     String BOT_TOKEN = "5706802021:AAHwjnbFMti2Fl7A1pWYP5DpO0wcBu-qlVw";
-    String UNIVERSITY_BASE_PATH = "http://185.74.5.104:8080/api/";
+    String UNIVERSITY_BASE_PATH = "http://api.pdp.uz/api/";
     String UNIVERSITY_EXAMS = "/university-application/v1/application/exams";
     String UNIVERSITY_EXAMS_BOT = "/university-application/v1/application/exams-for-bot";
     String UNIVERSITY_EXAMS_BOTS_API = "university-application/v1/application/exams-for-bot";
